@@ -16,7 +16,7 @@ Monorepo com dois projetos relacionados:
 
 ## O que é o projeto
 
-A "Rota do Perfume" é um curso de engenharia de dados com Databricks. A ideia é construir:
+A "Rota do Perfume" é um projeto de engenharia de dados com Databricks. A ideia é construir:
 
 1. Um **pipeline de dados** que ingere ERP + CRM, limpa, tipifica e entrega a `gold` dimensões, fato, marts e uma fila de 200 clientes priorizados por modelo de ML.
 2. Um **app comercial** que mostra essa fila para a direção comercial e permite registrar o resultado da ligação, fechando o ciclo.
