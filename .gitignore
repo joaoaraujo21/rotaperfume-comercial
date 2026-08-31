@@ -1,0 +1,49 @@
+# ── Secrets & credentials ───────────────────────────────────────────
+.env
+.env.*
+!.env.example
+.databrickscfg
+*.token
+
+# ── Node / npm ───────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# ── Python / uv ──────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+.venv/
+venv/
+env/
+
+# ── Build artifacts ──────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ── Databricks ───────────────────────────────────────────────────────
+app/                  # old AppKit generated dir
+.databricks/
+*.bundle/
+
+# ── IDE ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ── ML (gitignored but synced into bundle) ───────────────────────────
+rotaperfume/src/ml/**
+!rotaperfume/src/ml/.gitkeep
+
+# ── Generated / local data ───────────────────────────────────────────
+*.parquet
+ dados/

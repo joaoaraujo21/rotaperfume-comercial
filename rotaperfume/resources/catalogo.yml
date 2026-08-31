@@ -1,0 +1,59 @@
+# =============================================================================
+# catalogo.yml -- Schemas e Volumes do Unity Catalog como recurso do bundle.
+#
+# IMPORTANTE: o catalogo (lakehouse_rotaperfume) NAO esta aqui.
+# Ele e criado pelo script scripts/criar-catalogo.sh ANTES do bundle deploy.
+# A API REST do Unity Catalog recusa criar catalogo no Free Edition
+# (Default Storage habilitado, sem MANAGED LOCATION configuravel).
+#
+# Os schemas e volumes definidos aqui dependem de o catalogo ja existir --
+# o bundle os cria/atualiza automaticamente no deploy.
+# =============================================================================
+
+resources:
+  # ---------------------------------------------------------------------------
+  # Schemas -- as tres camadas da arquitetura medallion.
+  # O campo `comment` aparece no Catalog Explorer e no information_schema,
+  # e documenta o papel de cada camada em uma frase.
+  # ---------------------------------------------------------------------------
+  schemas:
+    schema_bronze:
+      name: bronze
+      catalog_name: ${var.catalog}
+      comment: >-
+        Camada BRONZE. Arquivos exatamente como chegaram do sistema de origem,
+        byte por byte. Fonte unica de verdade -- nao e limpo, nao e filtrado.
+        Se o numero do dashboard esta errado, a resposta esta aqui.
+
+    schema_silver:
+      name: silver
+      catalog_name: ${var.catalog}
+      comment: >-
+        Camada SILVER. Dados limpos, deduplicados e conformados. Joins
+        resolvidos, tipos corrigidos, nulos tratados. Ainda granular, mas
+        pronto para analise -- a camada onde o analista comeca a confiar.
+
+    schema_gold:
+      name: gold
+      catalog_name: ${var.catalog}
+      comment: >-
+        Camada GOLD. Tabelas agregadas e metricas de negocio, otimizadas
+        para leitura e servico de relatorios e dashboards. Aqui nao se
+        filtra -- se constroi a verdade unica do negocio.
+
+  # ---------------------------------------------------------------------------
+  # Volume -- bronze.raw guarda os CSVs crus.
+  # Volume e recurso do Unity Catalog (tem dono, permissao, aparece na
+  # linhagem). MANAGED: o Databricks gerencia o storage automaticamente
+  # usando o Default Storage do Free Edition.
+  # ---------------------------------------------------------------------------
+  volumes:
+    volume_bronze_raw:
+      name: raw
+      catalog_name: ${var.catalog}
+      schema_name: bronze
+      volume_type: MANAGED
+      comment: >-
+        Volume MANAGED para arquivos crus (CSV, JSON, Parquet) de qualquer
+        sistema de origem. Os CSVs de ERP e CRM pousam aqui antes de
+        qualquer transformacao.

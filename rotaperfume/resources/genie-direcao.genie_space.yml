@@ -1,0 +1,21 @@
+# =============================================================================
+# genie-direcao.genie_space.yml -- Genie Space "Rota do Perfume · Direção"
+#
+# Deploy: prompt_01_genie (noite 4). Segundo Genie do projeto, focado na
+# direção comercial.
+#
+# AUDIÊNCIA: direção comercial. Não escreve SQL, decide ligação.
+# INSTRUÇÕES: 10 regras de negócio em português, versionadas no bundle.
+#
+# FONTES: 7 tabelas (todas do gold). Genie da noite 2 tinha 12; este tem 7
+# porque o foco é diferente.
+#
+# MÉTRICA-CHAVE: lift_top200. AUC nunca é citada (métrica de quem treina).
+# =============================================================================
+
+resources:
+  genie_spaces:
+    genie_direcao:
+      title: "Rota do Perfume · Direção"
+      file_path: ../resources/direcao.geniespace.json
+      warehouse_id: ${var.warehouse_id}

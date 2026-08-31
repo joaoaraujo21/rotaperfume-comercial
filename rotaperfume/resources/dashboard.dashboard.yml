@@ -1,0 +1,23 @@
+# =============================================================================
+# dashboard.dashboard.yml -- Dashboard comercial como recurso do bundle.
+#
+# Deploy #5 (prompt_05.md): versiona o dashboard em JSON no repositorio.
+# O JSON vive em resources/dashboard-comercial.lvdash.json; este arquivo
+# apenas declara que ele eh um recurso `dashboards` para subir junto no deploy.
+#
+# Por que isso importa: dashboard clicado nao tem diff, nao tem revisao,
+# nao tem rollback. Em JSON versionado, eh `git diff` e `git revert`.
+#
+# As queries dentro do JSON usam nome de tabela PURO (`FROM fato_vendas`).
+# O catalogo e o schema vem de `dataset_catalog` e `dataset_schema` abaixo --
+# se prefixar `gold.fato_vendas` no JSON, o contexto eh ignorado.
+# =============================================================================
+
+resources:
+  dashboards:
+    dashboard_comercial:
+      display_name: "Dashboard Comercial - Rota Perfume"
+      file_path: ../resources/dashboard-comercial.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      dataset_catalog: ${var.catalog}
+      dataset_schema: gold

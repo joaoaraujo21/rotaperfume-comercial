@@ -1,0 +1,53 @@
+# This is a Declarative Automation Bundle definition for rotaperfume.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: rotaperfume
+  uuid: 0d158b7e-a69c-4d53-8523-21f1b1379f7b
+
+include:
+  - resources/*.yml
+
+# Variable declarations. These variables are assigned in the dev/prod targets below.
+variables:
+  catalog:
+    description: The Unity Catalog catalog to use
+  warehouse_id:
+    description: The SQL warehouse ID for query-based tasks (serverless)
+    default: 5e190bf1956452bc
+
+targets:
+  dev:
+    # ARMADILHA: nunca use `mode: development` no target dev. Ele prefixa o
+    # nome de TODOS os recursos com "[dev nome_do_usuario]" -- inclusive os
+    # schemas do Unity Catalog, que virariam dev_fulano_bronze, e quebrariam
+    # todo o SQL da noite (Table not found em SELECT bronze.clientes).
+    # A solucao e pausar o agendamento explicitamente via presets, que NAO
+    # afeta o nome dos recursos -- so impede que jobs rodem sozinhos.
+    presets:
+      trigger_pause_status: PAUSED
+    default: true
+    workspace:
+      host: https://dbc-320fbd50-0c3f.cloud.databricks.com
+    # src/ml/ esta no .gitignore, mas o bundle precisa sincronizar essa
+    # pasta para o workspace. Sem este sync.include, a tarefa ml_features
+    # falha com "Unable to access the notebook" -- mensagem de erro nao
+    # menciona .gitignore nenhum. (Aconteceu no ensaio.)
+    # Documentacao/ tambem fica fora do sync padrao -- os arquivos de docs
+    # moram em /Workspace/Users/.../.bundle/.../files/Documentacao.
+    sync:
+      include:
+        - src/ml/**
+        - "Documentação/**"
+    variables:
+      catalog: lakehouse_rotaperfume
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-320fbd50-0c3f.cloud.databricks.com
+      # We explicitly deploy to /Workspace/Users/joaogui21@hotmail.com to make sure we only have a single copy.
+      root_path: /Workspace/Users/joaogui21@hotmail.com/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: lakehouse_rotaperfume
+    permissions:
+      - user_name: joaogui21@hotmail.com
+        level: CAN_MANAGE

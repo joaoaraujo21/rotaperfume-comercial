@@ -1,0 +1,142 @@
+{
+  "version": 2,
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "lakehouse_rotaperfume.gold.calibragem_holdout",
+        "description": [
+          "Taxa de compra por faixa do modelo no holdout. Usado para verificar se o score ordena."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.checar_disponibilidade",
+        "description": [
+          "View: saldo e ruptura do SKU no snapshot mais recente do estoque."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.contexto_cliente",
+        "description": [
+          "View: historico de compras do cliente. WHERE cliente_id = Id."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.dim_cliente",
+        "description": [
+          "Nome, cidade, UF e dados cadastrais dos clientes."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.fato_vendas",
+        "description": [
+          "Fato de vendas: data, cliente, produto, receita, margem. Granularidade: item de pedido."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.features_cliente",
+        "description": [
+          "Features de ML para cada cliente. Score calculado ate 2026-08-31."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.features_treino",
+        "description": [
+          "Features de treino com label comprou_em_7d. Taxa base ~10%."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.fila_semanal",
+        "description": [
+          "Fila semanal de 200 clientes priorizados. Colunas: vendedor, ordem, cliente, score, faixa, motivo, sugestao."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.mart_vendas_por_vendedor",
+        "description": [
+          "Mart de vendas por vendedor. Grao: vendedor x mes."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.modelo_metricas",
+        "description": [
+          "Metricas de cada treino: AUC, lift_top200, acertos_top200, feature mais importante."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.priorizar_carteira",
+        "description": [
+          "View: filtra a fila_semanal por vendedor e quantidade. WHERE vendedor = Nome AND ordem <= N."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.score_propensao",
+        "description": [
+          "Score de propensao a compra. score: 0 a 1 (probabilidade de comprar em 7 dias). Faixa: Fria, Morna, Quente, Muito quente."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.sugerir_produtos",
+        "description": [
+          "View: SKUs que o cliente ja comprou. ORDER BY receita_total DESC."
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "6d5a0007e19fd33335a9548e2fcf542e",
+        "content": [
+          "Voce e um assistente de dados para a equipe de vendas da Rota Perfume. Use sempre as tabelas e funcoes deste espaco. Nunca invente numero, nome de cliente ou quantidade de estoque.\n\nScore e um numero entre 0 e 1 que representa a probabilidade de um cliente comprar nos proximos 7 dias. Faixa: Fria (score mais baixo) a Muito quente (score mais alto). Use score para ordenar os clientes.\n\nPara ver os clientes prioritarios, use gold.fila_semanal ordenada por score DESC. Para filtrar por vendedor, use gold.priorizar_carteira."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "1a3f9bf60a2fbc33ab9a2189ea0dd74f",
+        "question": [
+          "Quem eu ligo essa semana?"
+        ],
+        "sql": [
+          "SELECT vendedor, ordem, razao_social, cidade, score, faixa, motivo, sugestao FROM lakehouse_rotaperfume.gold.fila_semanal ORDER BY vendedor, ordem"
+        ]
+      },
+      {
+        "id": "3c3efa5717ca2024c1882f2caa36cf49",
+        "question": [
+          "Quantas ligacoes viraram pedido?"
+        ],
+        "sql": [
+          "SELECT COUNT(*) AS total_vendas FROM lakehouse_rotaperfume.gold.retorno_ligacao WHERE status = vendeu"
+        ]
+      },
+      {
+        "id": "468cfaa1ce3eab8a34f2e42001433bd3",
+        "question": [
+          "Quanto vale a fila semanal?"
+        ],
+        "sql": [
+          "SELECT ROUND(SUM(score * ticket_medio), 2) AS receita_esperada FROM lakehouse_rotaperfume.gold.fila_semanal"
+        ]
+      },
+      {
+        "id": "696cc3b239056f952c67f3ed266a59c6",
+        "question": [
+          "Quantas ligacoes ja foram registradas?"
+        ],
+        "sql": [
+          "SELECT COUNT(*) AS total_registros FROM lakehouse_rotaperfume.gold.retorno_ligacao"
+        ]
+      },
+      {
+        "id": "c1f4dba4e976432debf00b79c5f27396",
+        "question": [
+          "Qual o score do cliente X?"
+        ],
+        "sql": [
+          "SELECT cliente_id, ROUND(score, 4) AS score, faixa FROM lakehouse_rotaperfume.gold.score_propensao WHERE cliente_id = 123"
+        ]
+      }
+    ]
+  }
+}

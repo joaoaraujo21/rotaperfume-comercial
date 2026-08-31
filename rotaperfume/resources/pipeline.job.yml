@@ -1,0 +1,202 @@
+# =============================================================================
+# pipeline.job.yml -- Job principal do pipeline rotaperfume.
+#
+# EVOLUCAO DO JOB (Deploys 1 a 6):
+#
+#   Deploy #1:
+#     [1] raw_conferencia          -- conferencia de chegada
+#
+#   Deploy #2:
+#     [2] bronze_ingestao         -- le CSVs do Volume, cria 10 tabelas Delta
+#     [3] bronze_validacao        -- compara bronze vs raw (linhas == raw)
+#
+#   Deploy #3:
+#     [4] silver_01_clientes         -- dedup CNPJ, tipagem (sql_task)
+#     [5] silver_02_pedidos          -- tipagem, valor_liquido (sql_task)
+#     [6] silver_03_itens_produtos   -- devolucao flag, join (sql_task)
+#     [7] silver_04_crm_financeiro   -- vendedores/carteira/pagamentos (sql_task)
+#
+#   Deploy #4:
+#     [8]  gold_dimensoes         -- 4 dimensoes (sql_task)
+#     [9]  gold_fato_vendas       -- fato unico, devolucao negativa (sql_task)
+#     [10] gold_marts             -- 3 marts por diretoria (sql_task)
+#     [11] testes                 -- 9 testes com raise_error (sql_task)
+#
+#   Deploy #5 (features ML):
+#     [12] ml_features             -- 20 features, treino + score (notebook_task)
+#     [13] ml_modelo               -- treino + 3 tabelas (notebook_task)
+#     [14] ml_fila                 -- fila_semanal + 4 funcoes SQL (sql_task)
+#
+#   Deploy #6 (Genie):
+#     [15] gold_retorno_ligacao   -- caminho de volta + 3 views para Genie da Direcao
+#
+#   Deploy #7:
+#     [16] qualidade_dados         -- testes de qualidade
+#     [17] gold_dashboards         -- metricas para dashboards
+#     [18] silver_enriquecimento   -- enrich com dados externos
+#
+#   As 4 tarefas silver (4-7) sao em PARALELO. As tarefas gold (8-12) sao
+#   em SERIE -- fato depende de dimensoes, marts depende de fato, testes
+#   depende de marts, ml_features depende de testes. Testes eh o guarda de
+#   transicao: se falhar, o DAG para e o modelo nao e treinado.
+# =============================================================================
+
+resources:
+  jobs:
+    rotaperfume_pipeline:
+      name: rotaperfume_pipeline
+
+      # Serverless: sem new_cluster, job_cluster_key ou compute.
+      # O Databricks provisiona compute automaticamente no Free Edition.
+
+      tasks:
+        # Tarefa 1: conferencia de chegada (verifica que os arquivos chegaram)
+        - task_key: raw_conferencia
+          notebook_task:
+            notebook_path: ../src/raw/conferencia.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # Tarefa 2: ingestao bronze (CSVs do Volume -> 10 tabelas Delta)
+        - task_key: bronze_ingestao
+          depends_on:
+            - task_key: raw_conferencia
+          notebook_task:
+            notebook_path: ../src/bronze/ingestao.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # Tarefa 3: validacao bronze (bronze.linhas == raw.linhas)
+        - task_key: bronze_validacao
+          depends_on:
+            - task_key: bronze_ingestao
+          notebook_task:
+            notebook_path: ../src/bronze/validacao.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # Tarefa 4: silver 01 -- clientes (dedup CNPJ, normalizacao)
+        - task_key: silver_01_clientes
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/01-clientes.sql
+
+        # Tarefa 5: silver 02 -- pedidos (tipagem, valor_liquido)
+        - task_key: silver_02_pedidos
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/02-pedidos.sql
+
+        # Tarefa 6: silver 03 -- itens + produtos (devolucao, join)
+        - task_key: silver_03_itens_produtos
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/03-itens-e-produtos.sql
+
+        # Tarefa 7: silver 04 -- CRM + Financeiro
+        - task_key: silver_04_crm_financeiro
+          depends_on:
+            - task_key: bronze_ingestao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/silver/04-crm-e-financeiro.sql
+
+        # Tarefa 8: gold_dimensoes -- 4 dimensoes conformadas
+        # Depende das 4 silver, em paralelo.
+        - task_key: gold_dimensoes
+          depends_on:
+            - task_key: silver_01_clientes
+            - task_key: silver_02_pedidos
+            - task_key: silver_03_itens_produtos
+            - task_key: silver_04_crm_financeiro
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/05-dimensoes.sql
+
+        # Tarefa 9: gold_fato_vendas -- fato unico, grão item de pedido
+        - task_key: gold_fato_vendas
+          depends_on:
+            - task_key: gold_dimensoes
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/06-fato-vendas.sql
+
+        # Tarefa 10: gold_marts -- 3 marts por diretoria
+        - task_key: gold_marts
+          depends_on:
+            - task_key: gold_fato_vendas
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/07-marts.sql
+
+        # Tarefa 11: gold_retorno_ligacao -- caminho de volta + 3 views para Genie da Direcao
+        # Roda em paralelo com testes (ambos dependem de gold_marts).
+        # O Genie da Direcao é criado depois do deploy; a tarefa cria as tabelas
+        # e views que ele referencia. CREATE TABLE IF NOT EXISTS preserva os dados.
+        - task_key: gold_retorno_ligacao
+          depends_on:
+            - task_key: gold_marts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/11-retorno-ligacao.sql
+
+        # Tarefa 12: testes -- 9 testes com raise_error
+        # Se algum teste falhar, a tarefa PARA, e nada depois dela roda.
+        - task_key: testes
+          depends_on:
+            - task_key: gold_marts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/gold/08-testes.sql
+
+        # Tarefa 13: ml_features -- features para o modelo de ML
+        # Depende dos testes: modelo nao se treina com dado que ainda nao
+        # passou nos testes. Mesma funcao gera treino e score.
+        - task_key: ml_features
+          depends_on:
+            - task_key: testes
+          notebook_task:
+            notebook_path: ../src/ml/11-features.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # Tarefa 14: ml_modelo -- treino, metricas, score, 3 tabelas gold
+        # Depende de ml_features: as features precisam existir antes do treino.
+        - task_key: ml_modelo
+          depends_on:
+            - task_key: ml_features
+          notebook_task:
+            notebook_path: ../src/ml/12-modelo.py
+            base_parameters:
+              catalog: ${var.catalog}
+
+        # Tarefa 15: ml_fila -- fila_semanal + 4 funcoes SQL + testes
+        # Depende de ml_modelo: precisa do score_propensao e dim_cliente.
+        - task_key: ml_fila
+          depends_on:
+            - task_key: ml_modelo
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ml/13-fila.sql
+
+      # Agenda: diaria as 6:00 AM, Sao Paulo (trata DST automaticamente).
+      # Cron: qualquer mes, qualquer dia-do-mes, seg-dom, min=0, hora=6.
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: America/Sao_Paulo

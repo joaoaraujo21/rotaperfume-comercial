@@ -1,0 +1,43 @@
+.databricks/
+build/
+dist/
+__pycache__/
+*.egg-info
+.venv/
+scratch/**
+!scratch/README.md
+**/explorations/**
+**/!explorations/README.md
+
+# ML notebooks -- gerados/ajustados a cada tentativa na aula.
+# O sync.include no databricks.yml garante que o bundle ainda os envie
+# para o workspace do Databricks mesmo estando aqui.
+src/ml/
+
+# Variáveis de ambiente locais
+.env
+.env.local
+*.env.local
+
+# Artefatos do Databricks CLI
+.databrickscfg
+
+# Versão antiga do app Databricks (Python+React), substituída por
+# rotaperfume-direcao/ (Node+AppKit). Excluída para evitar confusão.
+app/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

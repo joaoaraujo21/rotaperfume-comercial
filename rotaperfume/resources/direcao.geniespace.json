@@ -1,0 +1,106 @@
+{
+  "version": 2,
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "lakehouse_rotaperfume.gold.clientes_em_risco",
+        "description": [
+          "Clientes fora do ritmo: score na faixa Fria ou atraso_relativo > 2. Usado para identificar clientes que precisam de atenÃ§Ã£o."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.fila_semanal",
+        "description": [
+          "Fila semanal de 200 clientes priorizados para ligaÃ§Ã£o. Colunas: vendedor, ordem, cliente, score, faixa, motivo, sugestÃ£o. Ordenada por score DESC."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.modelo_metricas",
+        "description": [
+          "MÃ©tricas de cada treino do modelo. Colunas: versao, auc, lift_top200, acertos_top200, taxa_base, feature_1. Para perguntas sobre a qualidade do modelo."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.ranking_marcas",
+        "description": [
+          "Ranking de marcas por receita total. Colunas: marca, receita_total, margem_pct, posicao. Para perguntas sobre performance de marcas."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.receita_mensal",
+        "description": [
+          "Receita por ano e mÃªs. Colunas: ano, mes, receita, margem, clientes_unicos. Para perguntas de sazonalidade."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.retorno_ligacao",
+        "description": [
+          "Registro do resultado de cada ligaÃ§Ã£o. Colunas: cliente_id, vendedor, status, comentario, registrado_em, registrado_por, _referencia. ComeÃ§a VAZIA. Use MAX(registrado_em) para pegar o retorno mais recente."
+        ]
+      },
+      {
+        "identifier": "lakehouse_rotaperfume.gold.score_propensao",
+        "description": [
+          "Score de propensÃ£o a compra. score: 0 a 1 (probabilidade de comprar em 7 dias). Faixa: Fria, Morna, Quente, Muito quente."
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "6d5a0007e19fd33335a9548e2fcf542e",
+        "content": [
+          "1. Nunca use o schema bronze. Todas as tabelas vÃ¡lidas estÃ£o em silver e gold.\n\n2. Um cliente pode ter mais de um retorno registrado. Para o estado atual, use o retorno mais recente: MAX(registrado_em) por cliente.\n\n3. A mÃ©trica da direÃ§Ã£o Ã© LIFT_TOP200. Nunca cite AUC para responder perguntas de negÃ³cio: AUC Ã© mÃ©trica de quem treina o modelo, nÃ£o de quem decide ligaÃ§Ã£o.\n\n4. VocÃª Ã© um assistente de anÃ¡lise de dados para a direÃ§Ã£o comercial da Rota Perfume. Use sempre as tabelas e funÃ§Ãµes deste espaÃ§o. Nunca invente nÃºmero, nome de cliente ou quantidade de estoque.\n\n5. Score Ã© um nÃºmero entre 0 e 1 que representa a probabilidade de um cliente comprar nos prÃ³ximos 7 dias. Faixa: Fria (score mais baixo) a Muito quente (score mais alto). A mÃ©trica da direÃ§Ã£o Ã© LIFT_TOP200: quantas vezes melhor que sortear clientes aleatoriamente.\n\n6. A fila de ligaÃ§Ãµes Ã© GLOBAL e nÃ£o por vendedor: os 200 clientes com maior score recebem ligaÃ§Ã£o, independente de quem Ã© o vendedor. Carteira quente recebe mais contatos. Para ver por vendedor, use a coluna vendedor na fila_semanal.\n\n7. A sazonalidade do setor de perfumaria Ã© INVERTIDA: o pico de vendas ocorre no mÃªs ANTERIOR Ã  data comemorativa. Ex: Natal em dezembro, mas as vendas disparam em novembro.\n\n8. Para receita esperada da fila: SUM(score * ticket_medio) da fila_semanal. Isso Ã© uma ESTIMATIVA baseada no score, nÃ£o receita realizada. Sempre diga 'estimativa' ao reportar.\n\n9. A fila_semanal tem exatamente 200 linhas. NÃ£o use LIMIT sem razÃ£o especÃ­fica.\n\n10. A tabela retorno_ligacao comeÃ§a VAZIA. Se a resposta for zero ou vazia, diga que ninguÃ©m registrou retorno ainda. NÃ£o invente nÃºmero e nÃ£o use a fila_semanal como se fosse retorno."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "question": [
+          "Quem eu ligo essa semana?"
+        ],
+        "sql": [
+          "SELECT vendedor, ordem, razao_social, cidade, score, faixa, motivo, sugestao FROM lakehouse_rotaperfume.gold.fila_semanal ORDER BY vendedor, ordem"
+        ],
+        "id": "1a3f9bf60a2fbc33ab9a2189ea0dd74f"
+      },
+      {
+        "question": [
+          "Quantas ligaÃ§Ãµes viraram pedido?"
+        ],
+        "sql": [
+          "SELECT COUNT(*) AS quantidade_vendas FROM lakehouse_rotaperfume.gold.retorno_ligacao WHERE status = 'vendeu'"
+        ],
+        "id": "3c3efa5717ca2024c1882f2caa36cf49"
+      },
+      {
+        "question": [
+          "Quanto vale a fila desta semana?"
+        ],
+        "sql": [
+          "SELECT ROUND(SUM(score * ticket_medio), 2) AS receita_esperada_estimativa FROM lakehouse_rotaperfume.gold.fila_semanal"
+        ],
+        "id": "468cfaa1ce3eab8a34f2e42001433bd3"
+      },
+      {
+        "question": [
+          "Quantas ligaÃ§Ãµes jÃ¡ foram registradas?"
+        ],
+        "sql": [
+          "SELECT COUNT(*) AS total_registros, COUNT(CASE WHEN status = 'vendeu' THEN 1 END) AS total_vendas FROM lakehouse_rotaperfume.gold.retorno_ligacao"
+        ],
+        "id": "696cc3b239056f952c67f3ed266a59c6"
+      },
+      {
+        "question": [
+          "O modelo Ã© bom?"
+        ],
+        "sql": [
+          "SELECT versao, ROUND(lift_top200, 2) AS lift, acertos_top200, ROUND(taxa_base * 100, 1) AS taxa_base_pct FROM lakehouse_rotaperfume.gold.modelo_metricas ORDER BY _treinado_em DESC LIMIT 1"
+        ],
+        "id": "c1f4dba4e976432debf00b79c5f27396"
+      }
+    ]
+  }
+}

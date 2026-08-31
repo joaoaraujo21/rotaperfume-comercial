@@ -1,0 +1,574 @@
+{
+  "datasets": [
+    {
+      "name": "dataset_fato",
+      "displayName": "Fato Vendas",
+      "query": "SELECT data_pedido, ano, mes, canal, cliente_id, razao_social, segmento, cidade, marca, categoria, receita, margem, devolucao FROM gold.fato_vendas"
+    },
+    {
+      "name": "dataset_fila_semanal",
+      "displayName": "Fila Semanal",
+      "query": "SELECT vendedor, ordem, cliente_id, razao_social, cidade, uf, score, faixa, ticket_medio, motivo, sugestao FROM gold.fila_semanal ORDER BY vendedor, ordem"
+    }
+  ],
+  "pages": [
+    {
+      "name": "main_canvas",
+      "displayName": "Dashboard Comercial",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter_ano",
+            "queries": [
+              {
+                "name": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_ano",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "ano",
+                      "expression": "`ano`"
+                    },
+                    {
+                      "name": "ano_associative_filter_predicate_group",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Ano"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "ano",
+                    "queryName": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_ano"
+                  }
+                ]
+              }
+            }
+          },
+          "position": { "x": 0, "y": 0, "width": 4, "height": 2 }
+        },
+        {
+          "widget": {
+            "name": "filter_segmento",
+            "queries": [
+              {
+                "name": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_segmento",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "segmento_associative_filter_predicate_group",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Segmento"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "segmento",
+                    "queryName": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_segmento"
+                  }
+                ]
+              }
+            }
+          },
+          "position": { "x": 4, "y": 0, "width": 4, "height": 2 }
+        },
+        {
+          "widget": {
+            "name": "filter_cidade",
+            "queries": [
+              {
+                "name": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_cidade",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "cidade",
+                      "expression": "`cidade`"
+                    },
+                    {
+                      "name": "cidade_associative_filter_predicate_group",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Cidade"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "cidade",
+                    "queryName": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fato_cidade"
+                  }
+                ]
+              }
+            }
+          },
+          "position": { "x": 8, "y": 0, "width": 4, "height": 2 }
+        },
+        {
+          "widget": {
+            "name": "counter_receita",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "total_receita",
+                      "expression": "SUM(`receita`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Receita Total"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_receita"
+                }
+              }
+            }
+          },
+          "position": { "x": 0, "y": 2, "width": 3, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_margem",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "total_margem",
+                      "expression": "SUM(`margem`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Margem Total"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_margem"
+                }
+              }
+            }
+          },
+          "position": { "x": 3, "y": 2, "width": 3, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_clientes",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "total_clientes",
+                      "expression": "COUNT(DISTINCT `cliente_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Clientes Unicos"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_clientes"
+                }
+              }
+            }
+          },
+          "position": { "x": 6, "y": 2, "width": 3, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "counter_ticket",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "ticket_medio",
+                      "expression": "SUM(`receita`) / COUNT(DISTINCT `cliente_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Ticket Medio"
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "ticket_medio"
+                }
+              }
+            }
+          },
+          "position": { "x": 9, "y": 2, "width": 3, "height": 3 }
+        },
+        {
+          "widget": {
+            "name": "line_receita_mensal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "mes_label",
+                      "expression": "CONCAT(CAST(`ano` AS STRING), '-', LPAD(CAST(`mes` AS STRING), 2, '0'))"
+                    },
+                    {
+                      "name": "receita_mes",
+                      "expression": "SUM(`receita`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Receita Mensal (R$ 24 meses)"
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "mes_label",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "primary": {
+                    "fields": [
+                      {
+                        "fieldName": "receita_mes"
+                      }
+                    ],
+                    "scale": {
+                      "type": "quantitative"
+                    },
+                    "format": {
+                      "type": "number-plain",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": { "x": 0, "y": 5, "width": 12, "height": 5 }
+        },
+        {
+          "widget": {
+            "name": "bar_top_marcas",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Top Marcas por Receita"
+              },
+              "widgetType": "bar",
+              "encodings": {}
+            }
+          },
+          "position": { "x": 0, "y": 10, "width": 6, "height": 5 }
+        },
+        {
+          "widget": {
+            "name": "bar_margem_categoria",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "showTitle": true,
+                "title": "Margem % por Categoria"
+              },
+              "widgetType": "bar",
+              "encodings": {}
+            }
+          },
+          "position": { "x": 6, "y": 10, "width": 6, "height": 5 }
+        },
+        {
+          "widget": {
+            "name": "table_top_clientes",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fato",
+                  "fields": [
+                    {
+                      "name": "razao_social",
+                      "expression": "`razao_social`"
+                    },
+                    {
+                      "name": "segmento",
+                      "expression": "`segmento`"
+                    },
+                    {
+                      "name": "cidade",
+                      "expression": "`cidade`"
+                    },
+                    {
+                      "name": "receita_cliente",
+                      "expression": "SUM(`receita`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 20,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": false,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "razao_social",
+                    "title": "Cliente",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "segmento",
+                    "title": "Segmento",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "cidade",
+                    "title": "Cidade",
+                    "type": "string",
+                    "displayAs": "string",
+                    "visible": true,
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "receita_cliente",
+                    "title": "Receita (R$)",
+                    "type": "float",
+                    "numberFormat": "0.00",
+                    "displayAs": "number",
+                    "visible": true,
+                    "order": 100003
+                  }
+                ]
+              }
+            }
+          },
+          "position": { "x": 0, "y": 15, "width": 12, "height": 7 }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "fila_semana",
+      "displayName": "Fila da Semana",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter_fila_vendedor",
+            "queries": [
+              {
+                "name": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fila_semanal_vendedor",
+                "query": {
+                  "datasetName": "dataset_fila_semanal",
+                  "fields": [
+                    {
+                      "name": "vendedor",
+                      "expression": "`vendedor`"
+                    },
+                    {
+                      "name": "vendedor_associative_filter_predicate_group",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Vendedor"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "vendedor",
+                    "queryName": "dashboards/01f1a2ec125b132897fb59555ae2e22b/datasets/dataset_fila_semanal_vendedor"
+                  }
+                ]
+              }
+            }
+          },
+          "position": { "x": 0, "y": 0, "width": 4, "height": 2 }
+        },
+        {
+          "widget": {
+            "name": "table_fila_semanal",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "dataset_fila_semanal",
+                  "fields": [
+                    {"name": "vendedor",     "expression": "`vendedor`"},
+                    {"name": "ordem",         "expression": "`ordem`"},
+                    {"name": "razao_social", "expression": "`razao_social`"},
+                    {"name": "cidade",        "expression": "`cidade`"},
+                    {"name": "score",         "expression": "`score`"},
+                    {"name": "faixa",         "expression": "`faixa`"},
+                    {"name": "motivo",        "expression": "`motivo`"},
+                    {"name": "sugestao",      "expression": "`sugestao`"}
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "invisibleColumns": [],
+              "allowHTMLByDefault": false,
+              "itemsPerPage": 25,
+              "paginationSize": "default",
+              "condensed": true,
+              "withRowNumber": false,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {"fieldName": "vendedor",     "title": "Vendedor",       "type": "string", "displayAs": "string", "visible": true, "order": 100000},
+                  {"fieldName": "ordem",         "title": "Ordem",          "type": "int",    "displayAs": "number", "visible": true, "order": 100001},
+                  {"fieldName": "razao_social", "title": "Cliente",        "type": "string", "displayAs": "string", "visible": true, "order": 100002},
+                  {"fieldName": "cidade",        "title": "Cidade",         "type": "string", "displayAs": "string", "visible": true, "order": 100003},
+                  {"fieldName": "score",         "title": "Score",          "type": "float",  "displayAs": "number", "numberFormat": "0.0000", "visible": true, "order": 100004},
+                  {"fieldName": "faixa",         "title": "Faixa",          "type": "string", "displayAs": "string", "visible": true, "order": 100005},
+                  {"fieldName": "motivo",        "title": "Motivo",         "type": "string", "displayAs": "string", "visible": true, "order": 100006},
+                  {"fieldName": "sugestao",      "title": "Sugestao",       "type": "string", "displayAs": "string", "visible": true, "order": 100007}
+                ]
+              }
+            }
+          },
+          "position": { "x": 0, "y": 2, "width": 12, "height": 8 }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}

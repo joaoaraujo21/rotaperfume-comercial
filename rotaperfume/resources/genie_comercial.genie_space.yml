@@ -1,0 +1,8 @@
+resources:
+  genie_spaces:
+    genie_comercial:
+      title: "Rota do Perfume · Comercial"
+      warehouse_id: 5e190bf1956452bc
+      file_path: genie_comercial.geniespace.json
+      description: Fila semanal, score de propensao e ferramentas do agente.
+      parent_path: /Workspace/Users/joaogui21@hotmail.com
