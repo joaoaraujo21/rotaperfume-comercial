@@ -153,6 +153,19 @@ Lembre de nunca commitar:
 
 ---
 
+## Resultado:
+
+<img width="1891" height="897" alt="Gold - Retorno Ligacao" src="https://github.com/user-attachments/assets/00a598a1-295d-4bc7-8679-38213bd36bcb" />
+
+<img width="1416" height="783" alt="Rota Perfume Pipeline" src="https://github.com/user-attachments/assets/5671ac4e-bc4d-4df0-8432-79e14332bf62" />
+
+<img width="1811" height="905" alt="A semana" src="https://github.com/user-attachments/assets/2bf7fc04-81f4-48d6-8833-c0d33fbf04fa" />
+
+<img width="1885" height="910" alt="Acompanhamento" src="https://github.com/user-attachments/assets/bf786592-8c59-4aa3-84b1-10d125714ba5" />
+
+<img width="1897" height="903" alt="Perguntas" src="https://github.com/user-attachments/assets/28bc62c1-8682-4f87-96b4-efe152d60863" />
+
+
 ## Licença
 
 Projeto didático. Sem licença de uso comercial.
